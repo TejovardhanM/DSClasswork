@@ -1,0 +1,77 @@
+---
+title: "Time Series Analysis"
+author: "Tejovardhan Medamarti"
+date: "March 7, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview and summary
+
+Our objective in this assignment is to perform time series analysis on the data for one of Milk Production, or Ice Cream Production, in the CADairyProduction.csv.
+
+We have chosen to analyse the data for the ice cream Production.
+
+file to answer the following questions
+
+  - Is this time series stationary?
+  
+  - Is there a significant seasonal component?
+  
+  - For the residual from the STL decomposition of the time series what is the order of the ARMA(p,q) process that best fits?
+  
+  - Forecast production for 12 months. Report both numeric values and plot the confidence intervals. Are the confidence intervals reasonably small compared to the forecast means? How do the confidence intervals behave as time moves to the future?
+  
+**Note: ** Following packages are required to run the below packages.
+  - forecast
+  - repr
+
+### Data staging:
+
+```{r CAdairystaging, warning=FALSE, message=FALSE}
+read.CADairy = function(file = "C:\\Tejo\\Datascience\\350\\Classwork\\DSClasswork\\Lecture8\\Assignment\\CADairyProduction.CSV"){
+    ## Read the csv file
+    dairy.produce <- read.csv(file, header = TRUE, 
+                              stringsAsFactors = FALSE)
+    
+  }
+  
+ca.dairy = read.CADairy()
+
+```
+Since we are dealing only with the Icecream prod feature, lets create a basic time series vector vec.ts which only contains Icecream prod feature.
+
+```{r}
+vec.ts = with(ca.dairy, log(ts(Icecream.Prod, start = c(1995, 1), freq = 12)))
+attributes(vec.ts) # Note the time series attributes
+
+options(repr.pmales.extlot.width=8, repr.plot.height=4)
+plot(vec.ts) # Note the x-axis is the time attribute
+
+```
+Lets create few utility functions for the visualization purpose.
+```{r utilfun, warning=FALSE, message=FALSE}
+
+plot.acf <- function(df, col = 'remainder', is.df =TRUE){
+  if(is.df) temp <- df[, col]
+  else temp <- df
+  par(mfrow = c(2,1))
+  acf(temp, main = paste('ACF of', col))
+  pacf(temp, main = paste('PACF of', col))
+  par(mfrow = c(1,1))
+}
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

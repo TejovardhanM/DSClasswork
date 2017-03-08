@@ -1,0 +1,116 @@
+---
+title: "Lesson1_Assignment_EnergyEfficiency"
+author: "Suman Nooney"
+date: "January 18, 2017"
+output:
+  pdf_document: default
+  html_document: default
+email: "suman.nooney@gmail.com"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Synopsis
+
+This report is based on the dataset available at <https://archive.ics.uci.edu/ml/datasets/Energy+efficiency#>. Our interest in this data, is 
+to find out the 3 interesting patterns how the Heating and Cooling Loads are impacted with the given 8 input variables.
+
+### Variable(s) Information:
+
+* Relative Compactness
+* Surface Area - m²
+* Wall Area - m²
+* Roof Area - m²
+* Overall Height - m
+* Orientation - 2:North, 3:East, 4:South, 5:West
+* Glazing Area - 0%, 10%, 25%, 40% (of floor area)
+* Glazing Area Distribution (Variance) - 1:Uniform, 2:North, 3:East, 4:South, 5:West
+* Heating Load - kWh/m²
+* Cooling Load - kWh/m²
+
+## Data staging
+There is a cleansed dataset available from the Github at <https://raw.githubusercontent.com/StephenElston/DataScience350/master/Lecture1/EnergyEfficiencyData.csv>.  Used it as a source, and below are the steps used in downloading and created a categorical variables for **"Orientation"**, **"Glazing Area Distribution (variance)"**.
+
+```{r}
+rm(list = ls())
+
+SourceURL_Raw <- "https://raw.githubusercontent.com/StephenElston/DataScience350/master/Lecture1/EnergyEfficiencyData.csv"
+
+energy.efficiency <- read.csv( SourceURL_Raw, header = TRUE)
+
+require(ggplot2)
+#install.packages("gridExtra")
+require(gridExtra)
+
+energy.efficiency$Orientation <- as.factor(energy.efficiency$Orientation)
+
+levels(energy.efficiency$Orientation) <- c("North", "East", "South", "West")
+
+energy.efficiency$Glazing.Area.Distribution <- as.factor(energy.efficiency$Glazing.Area.Distribution)
+
+levels(energy.efficiency$Glazing.Area.Distribution) <- c("UnKnown", "Uniform", "North", "East", "South", "West")
+
+energy.efficiency$Glazing.Area <- as.factor(energy.efficiency$Glazing.Area)
+
+levels(energy.efficiency$Glazing.Area) <- c("0%", "10%", "25%", "40%")
+```
+Lets look at the summary of the energy.effiiency data.
+```{r}
+summary(energy.efficiency)
+```
+
+## Visualizations
+### Plot 1:
+Lets visualize how the overall height impacts the overall Cooling and Heating Load using density plot.
+        
+```{r }
+ggplot(energy.efficiency, aes(x = Heating.Load , y = Cooling.Load)) + 
+        geom_point( aes(col = factor(Overall.Height)), alpha= 0.3) +
+        geom_density2d()+
+        xlab('Heating Load') + 
+        ylab('Cooling Load') + 
+        ggtitle('Heat and Cold Load Comparison by Overall Height')
+
+```
+
+From the above plot, it is clear that the overall height plays a critical role in heating and cooling load.
+
+### Plot 2:
+Lets visualize our second plot by how the roof and wall areas impacts the Heating Load using box plot.
+```{r echo=TRUE}
+ggplot(energy.efficiency, aes(x = factor(Roof.Area), y = Heating.Load,  group = Surface.Area)) +
+        geom_boxplot(aes(fill = factor(Wall.Area))) + 
+        # geom_jitter(alpha= 0.3)+
+        facet_grid(.~Overall.Height)+
+        xlab('Roof Area') + 
+        ylab('Heating Load') + 
+        ggtitle('Distribution of Heating Load on Roof Area by Wall Area and Overall Height')
+```
+
+###Plot: 3
+Lets visualize the load distribution of Glazing Area by Orientation.
+        
+```{r}
+ggplot(energy.efficiency, aes(Heating.Load, Cooling.Load))+
+  geom_point(aes(col = factor(Overall.Height)))+
+  facet_grid(Orientation ~ Glazing.Area)+
+  xlab('Heating Load') + 
+  ylab('Cooling Load') + 
+  ggtitle(' Heating and Cooling load distribution by Orientation and Glazing Area.')
+
+```
+
+
+###Plot: 4
+Lets visualize the Cooling and Heating load distribution by Orientation and Roof Area.
+
+```{r}
+ggplot(energy.efficiency, aes(x = Cooling.Load, y = Heating.Load))+
+        geom_point(aes(colour= Orientation))+
+        facet_grid(Overall.Height ~ Roof.Area) 
+
+```
+
+### Conclusion:
+From the above plots, we have clearly observed the Overall Height has a significant impact on overall heating and cooling load.

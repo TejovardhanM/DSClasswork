@@ -1,0 +1,323 @@
+---
+title: "Hypothesis_Testing"
+author: "Tejovardhan Medamarti"
+date: "February 8, 2017"
+<<<<<<< HEAD
+output:
+  pdf_document: default
+  html_document: default
+=======
+output: html_document
+>>>>>>> bac3d7b3bc81153dc189c72ca22c42969e9bda92
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Overview and summary
+
+Test hypotheses for the price of automobiles:
+
+Source of the data can be found at : https://archive.ics.uci.edu/ml/machine-learning-databases/autos/imports-85.data
+
+Our objective is to find the hypothesis for the given below questions.
+
+1. Compare and test Normality the distributions of price and log price - Use both a graphical method and a formal test.
+
+2. Test significance of price (log price) stratified by a) fuel type, b) aspiration, and c) rear vs. front wheel drive. Use both graphical methods and the formal test.
+
+3. Apply ANOVA to the auto price data to compare the price (or log price if closer to a Normal distribution) of autos stratified by number of doors, and body style - two sets of tests.
+
+<<<<<<< HEAD
+- Graphically explore the differences between the price conditioned by the categories of each variable -?Hint, make sure you have enough data for each category.
+=======
+- Graphically explore the differences between the price conditioned by the categories of each variable - Hint, make sure you have enough data for each category.
+>>>>>>> bac3d7b3bc81153dc189c72ca22c42969e9bda92
+- Use standard ANOVA and Tukey ANOVA to test the differences of these groups.
+
+Note: Following packages are required to run the below report.
+
+- dplyr
+
+
+```{r packages, message=FALSE}
+rm(list = ls())
+require(dplyr)
+require(ggplot2)
+
+<<<<<<< HEAD
+setwd("C:\\Tejo\\DataScience\\UW_Datascience_Course\\350\\DataScience350-master\\Lecture4\\Assignment")
+=======
+setwd("C:\\Tejo\\Datascience\\UW_Datascience_course\\350\\MethodsofDataAnalysis_350\\DataScience350-master\\Lecture4\\Assignment")
+
+>>>>>>> bac3d7b3bc81153dc189c72ca22c42969e9bda92
+```
+
+## Data loading and preparation
+
+```{r dataloading , message=FALSE}
+read.auto = function(file = 'Automobile price data _Raw_.csv'){
+  ## Read the csv file
+  auto.price <- read.csv(file, header = TRUE, 
+                         stringsAsFactors = FALSE)
+  
+  ## Coerce some character columns to numeric
+  numcols <- c('price', 'bore', 'stroke', 'horsepower', 'peak.rpm')
+  auto.price[, numcols] <- lapply(auto.price[, numcols], as.numeric)
+  
+  ## Remove cases or rows with missing values. In this case we keep the 
+  ## rows which do not have nas. 
+  auto.price[complete.cases(auto.price), ]
+}
+auto.price = read.auto()
+
+#Compare and test Normality the distributions of price and log price
+#- Use both a graphical method and a formal test.
+
+read.auto <- auto.price[auto.price$drive.wheels != "4wd",c("fuel.type", 
+                                        "aspiration","drive.wheels" ,"price" ,
+                                        "num.of.doors", "body.style" )]
+
+read.auto <- read.auto[read.auto$num.of.doors != "?", ]
+read.auto$log.price <- log(read.auto$price)
+read.auto$scaled.log.price <- scale(read.auto$log.price, center = TRUE, scale = TRUE)
+read.auto$scaled.price <- scale(read.auto$price, center = TRUE, scale = TRUE)
+
+pop_auto.price = rnorm(nrow(read.auto), mean=mean(read.auto$scaled.price), sd = sd(read.auto$scaled.price))
+pop_auto.norm = rnorm(nrow(read.auto), mean=0, sd = 1)
+pop_auto.log.price = rnorm(nrow(read.auto), mean=mean(read.auto$scaled.log.price), sd = sd(read.auto$scaled.log.price))
+
+```
+**Lets start with the Question 1:**  
+
+Compare and test Normality the distributions of price and log price - Use both a graphical method and a formal test.
+
+**Null Hypothesis:** Distribution of log price data is identical to Standard Normal distribution
+
+
+```{r kstestlog, message=FALSE}
+ks.test(read.auto$scaled.log.price, pop_auto.norm)
+```
+<<<<<<< HEAD
+- Based on the above results, we **ACCEPT** the null hypothesis as the P-values is > 0.05.
+=======
+- Based on the above results, we **REJECT** the null hypothesis as the P-values is < 0.5 (0.2352).
+>>>>>>> bac3d7b3bc81153dc189c72ca22c42969e9bda92
+
+**Null Hypothesis:** Distribution of price data is identical to Standard Normal distribution
+
+```{r kstestprice, message=FALSE}
+
+ks.test(read.auto$scaled.price, pop_auto.norm)
+
+```
+<<<<<<< HEAD
+**Conclusion:** Based on the above results, we **REJECT** the null hypothesis as the P-value is very small.
+=======
+**Conclusion:** Based on the above results, we **REJECT** the null hypothesis as the P-values is very small (0.001).
+>>>>>>> bac3d7b3bc81153dc189c72ca22c42969e9bda92
+
+## Visualization:
+
+Lets draw the QQ plot for the price and log price.
+
+```{r visualization, message=FALSE}
+
+par(mfrow = c(1, 2))
+
+plot(sort(pop_auto.price), sort(pop_auto.norm), main = 'Plot of Price vs. normalized', 
+     xlab = 'Sample Quantiles', ylab = 'Theoritical Quantiles')
+abline(a = 0.0, b = 1.0, lty = 2, col = 'red')
+
+plot(sort(pop_auto.log.price), sort(pop_auto.norm), main = 'Plot of log price vs. normalized', 
+     xlab = 'Sample Quantiles', ylab = 'Theoritical Quantiles')
+abline(a = 0.0, b = 1.0, lty = 2, col = 'red')
+
+par(mfrow = c(1, 1))
+<<<<<<< HEAD
+=======
+
+>>>>>>> bac3d7b3bc81153dc189c72ca22c42969e9bda92
+```
+
+Lets draw a CDF plot for log price vs standard normalized data.
+
+```{r standardization, message=FALSE}
+
+# Have to standardize the x-values
+x_seq = seq(-3,3,len=nrow(read.auto))
+y_cdf1 = sapply(x_seq, function(x){
+        sum(read.auto$scaled.log.price<x)/length(read.auto$scaled.log.price)
+})
+y_cdf2 = sapply(x_seq, function(x){
+        sum(pop_auto.norm<x)/length(pop_auto.norm)
+})
+
+## Find the max deviation
+k_s_stat = max(abs(y_cdf1 - y_cdf2))
+k_s_stat
+# where does it occur?
+k_index = which.max(abs(y_cdf1-y_cdf2))
+k_s_x = x_seq[k_index]
+plot(x_seq,y_cdf1, col='blue', pch=16, main ='CDFs of standardized samples', 
+     xlab = 'Value', ylab = 'Cumulative density')
+points(x_seq,y_cdf2,col='red', pch=16) 
+lines(c(k_s_x,k_s_x), c(y_cdf1[k_index],y_cdf2[k_index]),
+      col='black', lwd=8)
+```
+
+Lets do our second question:
+
+**2**. Test significance of price (log price) stratified by a) fuel type, b) aspiration, and c) rear vs. front wheel drive. Use both graphical methods and the formal test.
+
+
+```{r plotfun, message=FALSE}
+
+plot.t <- function(a, b, cols = c('pop_A', 'pop_B'), nbins = 20){
+        maxs = max(c(max(a), max(b)))
+        mins = min(c(min(a), min(b)))
+        breaks = seq(maxs, mins, length.out = (nbins + 1))
+        par(mfrow = c(2, 1))
+        hist(a, breaks = breaks, main = paste('Histogram of', cols[1]), xlab = cols[1])
+        abline(v = mean(a), lwd = 4, col = 'red')
+        hist(b, breaks = breaks, main = paste('Histogram of', cols[2]), xlab = cols[2])
+        abline(v = mean(b), lwd = 4, col = 'red')
+        par(mfrow = c(1, 1))
+}
+
+```
+For this analysis, i am stratifying the data by 10 records for each group.
+
+<<<<<<< HEAD
+**2(a). Lets start the analysis for log price by fuel type.**
+=======
+**1(a). Lets start the analysis for log price by fuel type.**
+>>>>>>> bac3d7b3bc81153dc189c72ca22c42969e9bda92
+
+**Null Hypothesis:** Significance of log price by fuel type. There is no price difference with the fuel type.
+
+```{r fueltype, message=FALSE}
+
+n = 10
+
+auto.fuel.type = read.auto %>% group_by(fuel.type ) %>% 
+        sample_n(n, replace = FALSE)
+
+auto.fuel.type.bydiesel <-  auto.fuel.type[auto.fuel.type$fuel.type=="diesel",]
+auto.fuel.type.bygas <-  auto.fuel.type[auto.fuel.type$fuel.type=="gas",]
+
+pop_A = auto.fuel.type.bydiesel$scaled.log.price
+pop_B = auto.fuel.type.bygas$scaled.log.price
+
+plot.t(pop_A, pop_B, cols = c("Log price by Diesel", "Log price by Gas"))
+
+ks.test(pop_A, pop_B, alternative = "two.sided")
+
+```
+**Conclusion:**  Based on the above results, we failed to reject, hence we **ACCEPT** the null hypothesis.
+
+<<<<<<< HEAD
+**2(b). Lets start the analysis for log price by aspiration.**
+=======
+**1(b). Lets start the analysis for log price by aspiration.**
+>>>>>>> bac3d7b3bc81153dc189c72ca22c42969e9bda92
+
+**Null Hypothesis:** Significance of log price by aspiration. There is no price difference with the aspiration.
+
+```{r aspiration, message=FALSE}
+auto.aspiration.type = read.auto %>% group_by(aspiration) %>% 
+        sample_n(n, replace = FALSE)
+
+auto.aspiration.type.std <-  auto.aspiration.type[auto.aspiration.type$aspiration=="std",]
+auto.aspiration.type.turbo <-  auto.aspiration.type[auto.aspiration.type$aspiration=="turbo",]
+
+
+pop_A = auto.aspiration.type.std$scaled.log.price
+pop_B = auto.aspiration.type.turbo$scaled.log.price
+
+plot.t(pop_A, pop_B, cols = c("Log price by std", "Log price by turbo"))
+
+ks.test(pop_A, pop_B, alternative = "two.sided")
+
+```
+<<<<<<< HEAD
+**Conclusion:** Based on the above results, we  **ACCEPT** the null hypothesis.
+
+**2(C). Lets start the analysis for log price by drive wheels**
+=======
+**Conclusion:** Based on the above results, we  **REJECT** the null hypothesis.
+
+**1(C). Lets start the analysis for log price by drive wheels**
+>>>>>>> bac3d7b3bc81153dc189c72ca22c42969e9bda92
+
+**Null Hypothesis:** Significance of log price by drive wheels There is no price difference with the drive wheels.
+
+
+```{r drivewheels, message=FALSE}
+
+auto.drive.wheels = read.auto %>% group_by(drive.wheels) %>% 
+        sample_n(n, replace = FALSE)
+
+auto.drive.wheels.rwd <-  auto.drive.wheels[auto.drive.wheels$drive.wheels=="rwd",]
+auto.drive.wheels.fwd <-  auto.drive.wheels[auto.drive.wheels$drive.wheels=="fwd",]
+
+
+pop_A = auto.drive.wheels.rwd$scaled.log.price
+pop_B = auto.drive.wheels.fwd$scaled.log.price
+#plot.t(pop_A, pop_B)
+
+ks.test(pop_A, pop_B, alternative = "two.sided")
+
+plot.t(pop_A, pop_B, cols = c("Log price by rwd", "Log price by fwd"))
+
+ks.test(pop_A, pop_B, alternative = "two.sided")
+```
+<<<<<<< HEAD
+**Conclusion:** Based on the above results, we  **ACCEPT** the null hypothesis.
+=======
+**Conclusion:** Based on the above results, we  **REJECT** the null hypothesis.
+>>>>>>> bac3d7b3bc81153dc189c72ca22c42969e9bda92
+
+3. Apply ANOVA to the auto price data to compare the price (or log price if closer to a Normal distribution) of autos stratified by number of doors, and body style - two sets of tests.
+
+**Null Hypothesis:** Significance of log price by Num of doors and body style. There is no price variances with the influence of Num of doors and body style.
+
+```{r anova, message=FALSE}
+
+auto.anova.sample = read.auto %>% group_by(num.of.doors, body.style) %>% 
+        sample_n(n, replace = TRUE)
+
+boxplot(auto.anova.sample$scaled.log.price ~ auto.anova.sample$num.of.doors+
+                auto.anova.sample$body.style)
+
+
+df_aov = aov(scaled.log.price ~ num.of.doors + body.style, data = auto.anova.sample)
+summary(df_aov)
+print(df_aov)
+
+tukey_anova = TukeyHSD(df_aov)  # Tukey's Range test:
+tukey_anova
+
+plot(tukey_anova)
+
+<<<<<<< HEAD
+```
+
+**Conclusion:**  Based on the above results,
+1. "hatchback-convertible" body style has significant impact on the log price, hence we are **rejecting** the null hypothesis and for the rest of the other body styles, we are **accepting**.
+
+2. For num.of.doors, we are **rejecting** the null hypothesis.
+
+##Conclusion:
+
+Log price is having signifant difference only when, 
+- body style equals "hatch back convertible" 
+- the num of doors.
+
+
+=======
+library(agricolae)
+HSD.test(ajuste, 'chocolate$Tipo')
+
+```
+>>>>>>> bac3d7b3bc81153dc189c72ca22c42969e9bda92

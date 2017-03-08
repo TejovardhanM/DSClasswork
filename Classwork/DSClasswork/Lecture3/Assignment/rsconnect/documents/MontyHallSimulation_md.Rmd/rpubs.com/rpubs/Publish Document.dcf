@@ -1,0 +1,8 @@
+name: Publish Document
+title:
+account: rpubs
+server: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/246104/61d13bc11ad143c18623163f8b9ccc44
+bundleId: https://api.rpubs.com/api/v1/document/246104/61d13bc11ad143c18623163f8b9ccc44
+url: http://rpubs.com/vardha4u/246104
+when: 1485922153.87384

@@ -1,0 +1,12 @@
+UNITS for the variables used in the paper
+
+X1 - Relative Compactness - No units
+X2 - Surface Area - m²
+X3 - Wall Area - m²
+X4 - Roof Area - m²
+X5 - Height - m
+X6 - Orientation - 2:North, 3:East, 4:South, 5:West - No units
+X7 - Glazing Area - 0%, 10%, 25%, 40% (of floor area) - No units
+X8 - Glazing Variations - 1:Uniform, 2:North, 3:East, 4:South, 5:West
+Y1 - Heating Load - kWh/m²
+Y2 - Cooling Load - kWh/m²
