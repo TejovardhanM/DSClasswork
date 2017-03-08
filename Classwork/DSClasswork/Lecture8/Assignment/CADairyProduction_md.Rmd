@@ -2,7 +2,9 @@
 title: "Time Series Analysis"
 author: "Tejovardhan Medamarti"
 date: "March 7, 2017"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -28,6 +30,12 @@ file to answer the following questions
 **Note: ** Following packages are required to run the below packages.
   - forecast
   - repr
+```{r pkgrequired, warning=FALSE, message=FALSE}
+require(forecast)
+require(repr)
+
+```
+
 
 ### Data staging:
 
@@ -52,7 +60,9 @@ options(repr.pmales.extlot.width=8, repr.plot.height=4)
 plot(vec.ts) # Note the x-axis is the time attribute
 
 ```
-Lets create few utility functions for the visualization purpose.
+
+**Lets create a helper functions for the visualization purpose.**
+
 ```{r utilfun, warning=FALSE, message=FALSE}
 
 plot.acf <- function(df, col = 'remainder', is.df =TRUE){
@@ -64,14 +74,87 @@ plot.acf <- function(df, col = 'remainder', is.df =TRUE){
   par(mfrow = c(1,1))
 }
 
+## Function for ARIMA model estimation
+ts.model = function(ts, col = 'remainder', order = c(0,0,1)){
+  mod = arima(ts, order = order, include.mean = FALSE)
+ print(mod)
+  mod
+}
+
+
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+Q1: Is this time series stationary?
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+#### - Plot 1:
+
+```{r plot1, echo=FALSE}
+plot.acf(vec.ts, col = 'time series - Is stationary', is.df = F)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r ljung}
+Box.test(vec.ts, lag =20, type="Ljung-Box")
+```
+
+**Result:** Based on the above results, ACF and PACF are dying slowly and also the LJung-box test reveals the ts is stationary based on the p-value.Hence the **time series is stationary**.
+
+Q2: Is there a significant seasonal component??
+#### - Plot 2:
+
+```{r tssignificant}
+plot(vec.ts, main = 'seasonal time series')
+monthplot(vec.ts)
+```
+
+**Result:** Based on the above results, **time series is a significant seasonal component**.
+
+Q3: For the residual from the STL decomposition of the time series what is the order of the ARMA(p,q) process that best fits?
+
+```{r tsdecomp}
+## Decomposition of the time series into components
+ts.decomp <- function(df, col = 'dairy.ts', span = 0.25, Mult = TRUE, is.df = TRUE){
+  # if(Mult) temp = log(df[, col])  else temp = ts(df[, col]
+  if(is.df) temp = log(df[, col])  
+  else temp = df
+  spans = span * length(temp)  
+  fit <- stl(temp, s.window = "periodic", t.window = spans)
+  plot(fit, main = paste('Decompositon of',col,'with lowess span = ', as.character(span)))
+  fit$time.series
+}
+
+temp = ts.decomp(vec.ts, is.df = FALSE, Mult = FALSE)
+
+```
+#### - Plot 3:
+```{r plot3}
+plot.acf(temp[,3],is.df=FALSE)
+iceCream.arima = ts.model(temp[, 3], col = 'ARIMA model for icecream production', order = c(2,0,2))##
+plot.acf(iceCream.arima$resid[-1],is.df=FALSE)
+
+```
+
+**Result:** Based on the above results, we are getting best fit at order c(2,0,2) for the ARMA(p,q) process.
+
+**Q4:** Forecast production for 12 months. Report both numeric values and plot the confidence intervals.
+
+  - Are the confidence intervals reasonably small compared to the forecast means? 
+  
+  - How do the confidence intervals behave as time moves to the future?
+  
+
+```{r tsforecast}
+
+fit.icecream = auto.arima(vec.ts, max.p=3, max.q=3,
+                       max.P=2, max.Q=2, max.order=5, max.d=2, max.D=1,
+                       start.p=0, start.q=0, start.P=0, start.Q=0)
+summary(fit.icecream)
+icecream.forecast = forecast(fit.icecream, h=12)
+summary(icecream.forecast)
+plot(icecream.forecast)
+
+```
+
+####Conclusion:
+  Based on the above results, Confidence intervals are relatively small when compared to the forecasted means and they behave as the time moves.
+

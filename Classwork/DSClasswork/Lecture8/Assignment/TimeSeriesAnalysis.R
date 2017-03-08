@@ -57,7 +57,7 @@ monthplot(vec.ts)
 
 ####3
 ## Decomposition of the time series into components
-ts.decomp <- function(df, col = 'dairy.ts', span = 0.5, Mult = TRUE, is.df = TRUE){
+ts.decomp <- function(df, col = 'dairy.ts', span = 0.25, Mult = TRUE, is.df = TRUE){
   # if(Mult) temp = log(df[, col])  else temp = ts(df[, col]
   if(is.df) temp = log(df[, col])  
   else temp = df
@@ -68,12 +68,19 @@ ts.decomp <- function(df, col = 'dairy.ts', span = 0.5, Mult = TRUE, is.df = TRU
 }
 
 temp = ts.decomp(vec.ts, is.df = FALSE, Mult = FALSE)
+plot.acf(temp[,3],is.df=FALSE)
+
+plot.acf(temp[,3],is.df=FALSE)
+
+
+iceCream.arima = ts.model(temp[, 3], col = 'ARIMA model for icecream production', order = c(2,0,2))##
+plot.acf(iceCream.arima$resid[-1],is.df=FALSE)
 
 
 final.aic <- Inf
 x = temp[,3]
 final.order <- c(0,0,0)
-for (i in 0:4) for (j in 0:4) {
+for (i in 0:2) for (j in 0:2) {
   current.aic <- AIC(arima(x, order=c(i, 0, j)))
   if (current.aic < final.aic) {
     final.aic <- current.aic
@@ -93,11 +100,11 @@ acf(resid(final.arma))
 #######################
 
 ## Function for ARIMA model estimation
-#ts.model = function(ts, col = 'remainder', order = c(0,0,1)){
-#  mod = arima(ts, order = order, include.mean = FALSE)
- # print(mod)
-#  mod
-#}
+ts.model = function(ts, col = 'remainder', order = c(0,0,1)){
+  mod = arima(ts, order = order, include.mean = FALSE)
+ print(mod)
+  mod
+}
 
 
 #mod.est = ts.model(temp[,3], col = 'AR(1) process', order = c(1,0,0))
